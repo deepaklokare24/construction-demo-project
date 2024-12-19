@@ -5,6 +5,7 @@
 # environment
 .env
 .env.*
+!.env.example
 
 # IDE
 /.idea
@@ -17,3 +18,11 @@ npm-debug.log*
 
 # Prisma
 /prisma/migrations/
+# Prisma generated files
+prisma/**/generated/
+prisma/**/*.db
+prisma/**/*.sqlite
+prisma/**/*.sqlite-journal
+
+# Keep schema files
+!prisma/**/schema.prisma

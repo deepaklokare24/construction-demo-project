@@ -1,9 +1,10 @@
 // src/projects/project.resolver.ts
 import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { ProjectService } from './project.service';
-import { Project, ProjectStatus } from '../../prisma/postgres/generated/postgres';
+import { Project } from './dto/project.dto';
+import { ProjectStatus } from './enums/project-status.enum';
 
-@Resolver('Project')
+@Resolver(() => Project)
 export class ProjectResolver {
   constructor(private projectService: ProjectService) {}
 
@@ -23,7 +24,7 @@ export class ProjectResolver {
     @Args('description') description: string,
     @Args('startDate') startDate: Date,
     @Args('endDate') endDate: Date,
-    @Args('status') status: ProjectStatus,
+    @Args('status', { type: () => ProjectStatus }) status: ProjectStatus,
     @Args('location') location: string,
   ) {
     return this.projectService.createProject({
@@ -39,7 +40,7 @@ export class ProjectResolver {
   @Mutation(() => Project)
   async updateProjectStatus(
     @Args('id') id: string,
-    @Args('status') status: ProjectStatus,
+    @Args('status', { type: () => ProjectStatus }) status: ProjectStatus,
   ) {
     return this.projectService.updateProject(id, { status });
   }

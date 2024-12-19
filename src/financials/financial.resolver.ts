@@ -1,9 +1,12 @@
 // src/financials/financial.resolver.ts
 import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { FinancialService } from './financial.service';
-import { Financial, Invoice, CostTracking, InvoiceStatus } from '../../prisma/mongodb/generated/mongodb';
+import { Financial, FinancialSummary } from './dto/financial.dto';
+import { Invoice } from './dto/invoice.dto';
+import { CostTracking } from './dto/cost-tracking.dto';
+import { InvoiceStatus } from './enums/invoice-status.enum';
 
-@Resolver(() => 'Financial')
+@Resolver(() => Financial)
 export class FinancialResolver {
   constructor(private financialService: FinancialService) {}
 
@@ -37,7 +40,7 @@ export class FinancialResolver {
     @Args('invoiceNumber') invoiceNumber: string,
     @Args('amount') amount: number,
     @Args('date') date: Date,
-    @Args('status') status: InvoiceStatus,
+    @Args('status', { type: () => InvoiceStatus }) status: InvoiceStatus,
   ) {
     return this.financialService.addInvoice({
       projectId,
@@ -56,7 +59,7 @@ export class FinancialResolver {
     @Args('category') category: string,
     @Args('amount') amount: number,
     @Args('date') date: Date,
-  ): Promise<CostTracking> {
+  ) {
     return this.financialService.addCostTracking({
       projectId,
       financialId,
@@ -69,12 +72,12 @@ export class FinancialResolver {
   @Mutation(() => Financial)
   async updateFinancial(
     @Args('id') id: string,
-    @Args('expenditure') expenditure?: number,
-    @Args('budget') budget?: number,
-  ): Promise<Financial> {
-    return this.financialService.updateExpenditureAndBudget(id, {
-      expenditure,
-      budget,
+    @Args('expenditure', { nullable: true }) expenditure?: number,
+    @Args('budget', { nullable: true }) budget?: number,
+  ) {
+    return this.financialService.updateFinancial(id, {
+      ...(expenditure !== undefined && { expenditure }),
+      ...(budget !== undefined && { budget }),
     });
   }
 }

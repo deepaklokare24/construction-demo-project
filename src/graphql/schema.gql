@@ -1,113 +1,87 @@
-# src/graphql/schema.graphql
-
-type Project {
-  id: ID!
-  name: String!
-  description: String
-  startDate: DateTime!
-  endDate: DateTime
-  status: ProjectStatus!
-  location: String!
-  financials: [Financial!]
-}
-
-type Financial {
-  id: ID!
-  projectId: ID!
-  budget: Float!
-  expenditure: Float!
-  invoices: [Invoice!]
-  costTracking: [CostTracking!]
-}
-
-type Invoice {
-  id: ID!
-  projectId: ID!
-  financialId: ID!
-  invoiceNumber: String!
-  amount: Float!
-  date: DateTime!
-  status: InvoiceStatus!
-}
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
 
 type CostTracking {
-  id: ID!
-  projectId: ID!
-  financialId: ID!
-  category: String!
   amount: Float!
+  category: String!
   date: DateTime!
+  financialId: String!
+  id: ID!
+  projectId: String!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type Financial {
+  budget: Float!
+  costTracking: [CostTracking!]
+  expenditure: Float!
+  id: ID!
+  invoices: [Invoice!]
+  projectId: String!
 }
 
 type FinancialSummary {
+  budgetUtilization: Float!
+  invoiceCollection: Float!
   totalBudget: Float!
+  totalCosts: Float!
   totalExpenditure: Float!
   totalInvoiced: Float!
-  budgetUtilization: Float!
 }
 
-
-enum ProjectStatus {
-  PLANNING
-  IN_PROGRESS
-  COMPLETED
-  ON_HOLD
+type Invoice {
+  amount: Float!
+  date: DateTime!
+  financialId: String!
+  id: ID!
+  invoiceNumber: String!
+  projectId: String!
+  status: InvoiceStatus!
 }
 
+"""The status of an invoice"""
 enum InvoiceStatus {
-  PENDING
-  PAID
   OVERDUE
-}
-
-type Query {
-  projects: [Project!]!
-  project(id: ID!): Project
-  projectFinancials(projectId: ID!): [Financial!]!
-  financialSummary(projectId: ID!): FinancialSummary!
+  PAID
+  PENDING
 }
 
 type Mutation {
-  createProject(
-    name: String!
-    description: String
-    startDate: DateTime!
-    endDate: DateTime
-    status: ProjectStatus!
-    location: String!
-  ): Project!
+  addCostTracking(amount: Float!, category: String!, date: DateTime!, financialId: String!, projectId: String!): CostTracking!
+  addInvoice(amount: Float!, date: DateTime!, financialId: String!, invoiceNumber: String!, projectId: String!, status: InvoiceStatus!): Invoice!
+  createFinancial(budget: Float!, expenditure: Float!, projectId: String!): Financial!
+  createProject(description: String!, endDate: DateTime!, location: String!, name: String!, startDate: DateTime!, status: ProjectStatus!): Project!
+  updateFinancial(budget: Float, expenditure: Float, id: String!): Financial!
+  updateProjectStatus(id: String!, status: ProjectStatus!): Project!
+}
 
-  updateProjectStatus(
-    id: ID!
-    status: ProjectStatus!
-  ): Project!
+type Project {
+  createdAt: DateTime!
+  description: String
+  endDate: DateTime
+  id: ID!
+  location: String!
+  name: String!
+  startDate: DateTime!
+  status: ProjectStatus!
+}
 
-  createFinancial(
-    projectId: ID!
-    budget: Float!
-    expenditure: Float!
-  ): Financial!
+"""The status of a project"""
+enum ProjectStatus {
+  COMPLETED
+  IN_PROGRESS
+  ON_HOLD
+  PLANNING
+}
 
-  addInvoice(
-    projectId: ID!
-    financialId: ID!
-    invoiceNumber: String!
-    amount: Float!
-    date: DateTime!
-    status: InvoiceStatus!
-  ): Invoice!
-
-  addCostTracking(
-    projectId: ID!
-    financialId: ID!
-    category: String!
-    amount: Float!
-    date: DateTime!
-  ): CostTracking!
-
-  updateFinancial(
-    id: ID!
-    expenditure: Float
-    budget: Float
-  ): Financial!
+type Query {
+  financialSummary(projectId: String!): FinancialSummary!
+  project(id: String!): Project!
+  projectFinancials(projectId: String!): [Financial!]!
+  projects: [Project!]!
 }

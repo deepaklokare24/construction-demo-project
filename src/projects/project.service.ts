@@ -40,7 +40,7 @@ export class ProjectService {
           startDate: 'desc',
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       throw new Error(`Failed to fetch projects: ${error.message}`);
     }
   }
@@ -56,7 +56,7 @@ export class ProjectService {
       }
 
       return project;
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof NotFoundException) {
         throw error;
       }
@@ -90,7 +90,7 @@ export class ProjectService {
       }
 
       return project;
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
           throw new NotFoundException(`Project with ID ${id} not found`);
@@ -105,7 +105,7 @@ export class ProjectService {
       return await this.postgres.project.delete({
         where: { id },
       });
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
           throw new NotFoundException(`Project with ID ${id} not found`);
@@ -123,7 +123,7 @@ export class ProjectService {
           startDate: 'desc',
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       throw new Error(`Failed to fetch projects by status: ${error.message}`);
     }
   }

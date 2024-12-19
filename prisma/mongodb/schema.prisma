@@ -10,31 +10,41 @@ datasource db {
 }
 
 model Financial {
-  id            String   @id @default(auto()) @map("_id")
-  projectId     String
-  budget        Float
-  expenditure   Float
+  id            String         @id @default(auto()) @map("_id") @db.ObjectId
+  projectId     String        // UUID from Postgres
+  budget        Float         @db.Double
+  expenditure   Float         @db.Double
   invoices      Invoice[]
   costTracking  CostTracking[]
+
+  @@index([projectId])
 }
 
 model Invoice {
-  id            String   @id @default(auto()) @map("_id")
-  financialId   String
-  financial     Financial @relation(fields: [financialId], references: [id])
+  id            String         @id @default(auto()) @map("_id") @db.ObjectId
+  projectId     String        // UUID from Postgres
+  financialId   String        @db.ObjectId
+  financial     Financial     @relation(fields: [financialId], references: [id])
   invoiceNumber String
-  amount        Float
-  date          DateTime
+  amount        Float         @db.Double
+  date          DateTime      @db.Date
   status        InvoiceStatus
+
+  @@index([projectId])
+  @@index([financialId])
 }
 
 model CostTracking {
-  id            String   @id @default(auto()) @map("_id")
-  financialId   String
-  financial     Financial @relation(fields: [financialId], references: [id])
+  id            String         @id @default(auto()) @map("_id") @db.ObjectId
+  projectId     String        // UUID from Postgres
+  financialId   String        @db.ObjectId
+  financial     Financial     @relation(fields: [financialId], references: [id])
   category      String
-  amount        Float
-  date          DateTime
+  amount        Float         @db.Double
+  date          DateTime      @db.Date
+
+  @@index([projectId])
+  @@index([financialId])
 }
 
 enum InvoiceStatus {

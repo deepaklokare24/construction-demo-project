@@ -1,0 +1,54 @@
+// prisma/mongodb/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/mongodb"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("MONGODB_URL")
+}
+
+model Financial {
+  id           String         @id @default(auto()) @map("_id") @db.ObjectId
+  projectId    String // UUID from Postgres
+  budget       Float          @db.Double
+  expenditure  Float          @db.Double
+  invoices     Invoice[]
+  costTracking CostTracking[]
+
+  @@index([projectId])
+}
+
+model Invoice {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  projectId     String // UUID from Postgres
+  financialId   String        @db.ObjectId
+  financial     Financial     @relation(fields: [financialId], references: [id])
+  invoiceNumber String
+  amount        Float         @db.Double
+  date          DateTime      @db.Date
+  status        InvoiceStatus
+
+  @@index([projectId])
+  @@index([financialId])
+}
+
+model CostTracking {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  projectId   String // UUID from Postgres
+  financialId String    @db.ObjectId
+  financial   Financial @relation(fields: [financialId], references: [id])
+  category    String
+  amount      Float     @db.Double
+  date        DateTime  @db.Date
+
+  @@index([projectId])
+  @@index([financialId])
+}
+
+enum InvoiceStatus {
+  PENDING
+  PAID
+  OVERDUE
+}

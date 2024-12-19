@@ -1,30 +1,28 @@
 // src/financials/financial.resolver.ts
 import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { FinancialService } from './financial.service';
-import { Financial, Invoice, CostTracking, InvoiceStatus } from '@prisma/client';
+import { Financial, Invoice, CostTracking, InvoiceStatus } from '../../prisma/mongodb/generated/mongodb';
 
-@Resolver('Financial')
+@Resolver(() => 'Financial')
 export class FinancialResolver {
   constructor(private financialService: FinancialService) {}
 
-  @Query('projectFinancials')
-  async getProjectFinancials(
-    @Args('projectId') projectId: string,
-  ): Promise<Financial[]> {
-    return this.financialService.getProjectFinancials(projectId);
+  @Query(() => [Financial])
+  async projectFinancials(@Args('projectId') projectId: string) {
+    return this.financialService.getFinancialsByProjectId(projectId);
   }
 
-  @Query('financialSummary')
-  async getFinancialSummary(@Args('projectId') projectId: string) {
+  @Query(() => FinancialSummary)
+  async financialSummary(@Args('projectId') projectId: string) {
     return this.financialService.getFinancialSummary(projectId);
   }
 
-  @Mutation('createFinancial')
+  @Mutation(() => Financial)
   async createFinancial(
     @Args('projectId') projectId: string,
     @Args('budget') budget: number,
     @Args('expenditure') expenditure: number,
-  ): Promise<Financial> {
+  ) {
     return this.financialService.createFinancial({
       projectId,
       budget,
@@ -32,15 +30,17 @@ export class FinancialResolver {
     });
   }
 
-  @Mutation('addInvoice')
+  @Mutation(() => Invoice)
   async addInvoice(
+    @Args('projectId') projectId: string,
     @Args('financialId') financialId: string,
     @Args('invoiceNumber') invoiceNumber: string,
     @Args('amount') amount: number,
     @Args('date') date: Date,
     @Args('status') status: InvoiceStatus,
-  ): Promise<Invoice> {
+  ) {
     return this.financialService.addInvoice({
+      projectId,
       financialId,
       invoiceNumber,
       amount,
@@ -49,14 +49,16 @@ export class FinancialResolver {
     });
   }
 
-  @Mutation('addCostTracking')
+  @Mutation(() => CostTracking)
   async addCostTracking(
+    @Args('projectId') projectId: string,
     @Args('financialId') financialId: string,
     @Args('category') category: string,
     @Args('amount') amount: number,
     @Args('date') date: Date,
   ): Promise<CostTracking> {
     return this.financialService.addCostTracking({
+      projectId,
       financialId,
       category,
       amount,
@@ -64,7 +66,7 @@ export class FinancialResolver {
     });
   }
 
-  @Mutation('updateFinancial')
+  @Mutation(() => Financial)
   async updateFinancial(
     @Args('id') id: string,
     @Args('expenditure') expenditure?: number,

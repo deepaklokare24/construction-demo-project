@@ -18,6 +18,9 @@ import { FinancialModule } from './financials/financial.module';
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: join(process.cwd(), 'src/graphql/schema.gql'),
+      sortSchema: true,
+      playground: true,
+      context: ({ req }: { req: Request }) => ({ req }),
     }),
     PrismaModule,
     SupabaseModule,

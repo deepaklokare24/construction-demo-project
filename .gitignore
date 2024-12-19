@@ -1,0 +1,19 @@
+# dependencies
+/node_modules
+/dist
+
+# environment
+.env
+.env.*
+
+# IDE
+/.idea
+/.vscode
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Prisma
+/prisma/migrations/

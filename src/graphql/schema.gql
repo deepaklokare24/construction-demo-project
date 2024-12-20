@@ -80,6 +80,7 @@ enum ProjectStatus {
 }
 
 type Query {
+  allProjectFinancials: [Financial!]!
   financialSummary(projectId: String!): FinancialSummary!
   project(id: String!): Project!
   projectFinancials(projectId: String!): [Financial!]!

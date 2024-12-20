@@ -8,6 +8,14 @@ import { SupabaseService } from './supabase/supabase.service';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
+  // Enable CORS for frontend application
+  app.enableCors({
+    origin: 'http://localhost:5173',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: 'Content-Type,Accept,Authorization',
+    credentials: true,
+  });
+  
   // Test Postgres Connection
   const postgresService = app.get(PostgresService);
   try {

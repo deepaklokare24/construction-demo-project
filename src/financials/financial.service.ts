@@ -11,6 +11,19 @@ export class FinancialService {
     private readonly postgres: PostgresService, // Add this to verify project existence
   ) {}
 
+  async getAllFinancials() {
+    try {
+      return await this.mongodb.financial.findMany({
+        include: {
+          invoices: true,
+          costTracking: true,
+        },
+      });
+    } catch (error: any) {
+      throw new Error(`Failed to fetch all financial records: ${error.message}`);
+    }
+  }
+
   async createFinancial(data: {
     projectId: string;
     budget: number;

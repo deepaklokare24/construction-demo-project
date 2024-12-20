@@ -1,52 +1,36 @@
 import { useState } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
-import { gql } from '@apollo/client';
 import { Link } from 'react-router-dom';
 import { PlusIcon } from '@heroicons/react/24/outline';
+import { GET_PROJECTS } from '../graphql/queries';
+import { CREATE_PROJECT } from '../graphql/mutations';
+import { Project, ProjectStatus } from '../types/schema';
 
-const GET_PROJECTS = gql`
-  query GetProjects {
-    projects {
-      id
-      name
-      description
-      status
-      startDate
-      endDate
-      budget
-      expenses {
-        id
-        amount
-      }
-    }
-  }
-`;
+interface ProjectsData {
+  projects: Project[];
+}
 
-const CREATE_PROJECT = gql`
-  mutation CreateProject($input: CreateProjectInput!) {
-    createProject(input: $input) {
-      id
-      name
-      description
-      status
-      startDate
-      endDate
-      budget
-    }
-  }
-`;
+interface CreateProjectInput {
+  name: string;
+  description: string;
+  location: string;
+  startDate: string;
+  endDate: string;
+  status: ProjectStatus;
+}
 
 export default function Projects() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<CreateProjectInput>({
     name: '',
     description: '',
+    location: '',
     startDate: '',
     endDate: '',
-    budget: '',
+    status: ProjectStatus.PLANNING,
   });
 
-  const { loading, error, data } = useQuery(GET_PROJECTS);
+  const { loading, error, data } = useQuery<ProjectsData>(GET_PROJECTS);
   const [createProject] = useMutation(CREATE_PROJECT, {
     refetchQueries: [{ query: GET_PROJECTS }],
   });
@@ -56,19 +40,19 @@ export default function Projects() {
     try {
       await createProject({
         variables: {
-          input: {
-            ...formData,
-            budget: parseFloat(formData.budget),
-          },
+          ...formData,
+          startDate: new Date(formData.startDate).toISOString(),
+          endDate: new Date(formData.endDate).toISOString(),
         },
       });
       setIsModalOpen(false);
       setFormData({
         name: '',
         description: '',
+        location: '',
         startDate: '',
         endDate: '',
-        budget: '',
+        status: ProjectStatus.PLANNING,
       });
     } catch (err) {
       console.error('Error creating project:', err);
@@ -103,48 +87,36 @@ export default function Projects() {
       {/* Projects List */}
       <div className="bg-white shadow overflow-hidden sm:rounded-md">
         <ul role="list" className="divide-y divide-gray-200">
-          {data.projects.map((project) => {
-            const totalExpenses = project.expenses.reduce((sum, exp) => sum + exp.amount, 0);
-            const budgetUsage = (totalExpenses / project.budget) * 100;
-            
-            return (
-              <li key={project.id}>
-                <Link to={`/projects/${project.id}`} className="block hover:bg-gray-50">
-                  <div className="px-4 py-4 sm:px-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex flex-col">
-                        <p className="text-sm font-medium text-primary-600 truncate">{project.name}</p>
-                        <p className="mt-1 text-sm text-gray-500">{project.description}</p>
-                      </div>
-                      <div className="ml-2 flex-shrink-0 flex flex-col items-end">
-                        <span className={`
-                          px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                          ${project.status === 'COMPLETED' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}
-                        `}>
-                          {project.status.replace('_', ' ')}
-                        </span>
-                        <p className="mt-1 text-sm text-gray-500">
-                          Budget Usage: {budgetUsage.toFixed(1)}%
-                        </p>
-                      </div>
+          {data?.projects.map((project) => (
+            <li key={project.id}>
+              <Link to={`/projects/${project.id}`} className="block hover:bg-gray-50">
+                <div className="px-4 py-4 sm:px-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-col">
+                      <p className="text-sm font-medium text-primary-600 truncate">{project.name}</p>
+                      <p className="mt-1 text-sm text-gray-500">{project.description}</p>
+                      <p className="mt-1 text-sm text-gray-500">Location: {project.location}</p>
                     </div>
-                    <div className="mt-2 sm:flex sm:justify-between">
-                      <div className="sm:flex">
-                        <p className="flex items-center text-sm text-gray-500">
-                          Budget: ${project.budget.toLocaleString()}
-                        </p>
-                      </div>
-                      <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                        <p>
-                          {new Date(project.startDate).toLocaleDateString()} - {new Date(project.endDate).toLocaleDateString()}
-                        </p>
-                      </div>
+                    <div className="ml-2 flex-shrink-0">
+                      <span className={`
+                        px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                        ${project.status === ProjectStatus.COMPLETED ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}
+                      `}>
+                        {project.status.replace('_', ' ')}
+                      </span>
                     </div>
                   </div>
-                </Link>
-              </li>
-            );
-          })}
+                  <div className="mt-2 sm:flex sm:justify-between">
+                    <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
+                      <p>
+                        {new Date(project.startDate).toLocaleDateString()} - {project.endDate ? new Date(project.endDate).toLocaleDateString() : 'TBD'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            </li>
+          ))}
         </ul>
       </div>
 
@@ -185,6 +157,21 @@ export default function Projects() {
                   />
                 </div>
 
+                <div>
+                  <label htmlFor="location" className="block text-sm font-medium text-gray-700">
+                    Location
+                  </label>
+                  <input
+                    type="text"
+                    name="location"
+                    id="location"
+                    required
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                    value={formData.location}
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  />
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="startDate" className="block text-sm font-medium text-gray-700">
@@ -218,23 +205,22 @@ export default function Projects() {
                 </div>
 
                 <div>
-                  <label htmlFor="budget" className="block text-sm font-medium text-gray-700">
-                    Budget
+                  <label htmlFor="status" className="block text-sm font-medium text-gray-700">
+                    Status
                   </label>
-                  <div className="mt-1 relative rounded-md shadow-sm">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <span className="text-gray-500 sm:text-sm">$</span>
-                    </div>
-                    <input
-                      type="number"
-                      name="budget"
-                      id="budget"
-                      required
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 pl-7 pr-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                      value={formData.budget}
-                      onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
-                    />
-                  </div>
+                  <select
+                    id="status"
+                    name="status"
+                    className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md"
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value as ProjectStatus })}
+                  >
+                    {Object.values(ProjectStatus).map((status) => (
+                      <option key={status} value={status}>
+                        {status.replace('_', ' ')}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">

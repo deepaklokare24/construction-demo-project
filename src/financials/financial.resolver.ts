@@ -15,6 +15,11 @@ export class FinancialResolver {
     return this.financialService.getFinancialsByProjectId(projectId);
   }
 
+  @Query(() => [Financial])
+  async allProjectFinancials() {
+    return this.financialService.getAllFinancials();
+  }
+
   @Query(() => FinancialSummary)
   async financialSummary(@Args('projectId') projectId: string) {
     return this.financialService.getFinancialSummary(projectId);

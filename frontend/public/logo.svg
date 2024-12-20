@@ -1,0 +1,10 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Building/Construction icon -->
+  <path d="M6 26V13L16 6L26 13V26H6Z" stroke="white" stroke-width="2"/>
+  <!-- Crane arm -->
+  <path d="M13 12L19 12L19 16" stroke="white" stroke-width="2"/>
+  <!-- Windows -->
+  <rect x="10" y="16" width="4" height="4" fill="white"/>
+  <rect x="18" y="16" width="4" height="4" fill="white"/>
+  <rect x="14" y="22" width="4" height="4" fill="white"/>
+</svg> 
